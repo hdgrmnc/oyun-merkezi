@@ -1211,8 +1211,8 @@
   </style>
 
   <!-- ══ FIREBASE SDK ══ -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="firebase-app.js"></script>
+  <script src="firebase-db.js"></script>
 
   <!-- ══ SENKRON MOD STİLLERİ ══ -->
   <style>
@@ -11010,20 +11010,19 @@
       document.getElementById('syncErrMsg').textContent = 'En az 2 karakter gir.';
       return;
     }
-    document.getElementById('syncErrMsg').textContent = '';
-    // Oda var mı kontrol et
-    db.ref('odalar/' + kod).once('value').then(snap => {
-      // Tabelacı her zaman üzerine yazabilir — devam
-      SYNC.aktif    = true;
-      SYNC.rol      = 'tabela';
-      SYNC.odaKodu  = kod;
-      syncUIGuncelle();
-      syncModalKapat();
-      // İlk veriyi hemen gönder
-      window.syncYaz();
-    }).catch(e => {
-      document.getElementById('syncErrMsg').textContent = 'Bağlantı hatası: ' + e.message;
-    });
+    document.getElementById('syncErrMsg').textContent = '⏳ Oda açılıyor...';
+    // Her zaman önce bir işaret yaz — izleyici bulsun
+    db.ref('odalar/' + kod).set({ oyun: null, veri: null, ts: Date.now(), acik: true })
+      .then(() => {
+        SYNC.aktif    = true;
+        SYNC.rol      = 'tabela';
+        SYNC.odaKodu  = kod;
+        syncUIGuncelle();
+        syncModalKapat();
+        window.syncYaz();
+      }).catch(e => {
+        document.getElementById('syncErrMsg').textContent = 'Bağlantı hatası: ' + e.message;
+      });
   };
 
   /* ── Odaya katıl (izleyici) ── */
