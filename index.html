@@ -8417,10 +8417,10 @@
 
     function exitDoBack(){ closeExitModal(); }
 
-    function exitKing(){ openExitModal('king'); }
-    function exitOhel(){ openExitModal('ohel'); }
-    function g101Exit(){ openExitModal('101'); }
-    function amExit(){   openExitModal('am'); }
+    function exitKing(){ if(SYNC.aktif && SYNC.rol==='izleyici'){ showScreen('homeScreen'); homeUpdateSeansBox(); return; } openExitModal('king'); }
+    function exitOhel(){ if(SYNC.aktif && SYNC.rol==='izleyici'){ showScreen('homeScreen'); homeUpdateSeansBox(); return; } openExitModal('ohel'); }
+    function g101Exit(){ if(SYNC.aktif && SYNC.rol==='izleyici'){ showScreen('homeScreen'); homeUpdateSeansBox(); return; } openExitModal('101'); }
+    function amExit(){   if(SYNC.aktif && SYNC.rol==='izleyici'){ showScreen('homeScreen'); homeUpdateSeansBox(); return; } openExitModal('am'); }
 
     /* ── SETUP EKRANI ANA EKRAN TUŞU — Çıkış Modalı ── */
     function setupExitModal(screen) {
@@ -8862,6 +8862,7 @@
           autoStartSeans();
           showScreen('kingGame'); kBuildTypeGrid(); kGoToPhase1(); kRender(); return;
         }
+        if(SYNC.aktif && SYNC.rol==='izleyici') return; // izleyici setup'a girmesin
         showScreen('kingModeSelect');
       } else if(homeGame==='ohel'){
         const saved = gameLoadOhel();
@@ -8874,6 +8875,7 @@
           autoStartSeans();
           showScreen('ohelGame'); oRenderAll(); return;
         }
+        if(SYNC.aktif && SYNC.rol==='izleyici') return;
         showScreen('ohelSetup'); oFirstPlayer=0; ohelBuildStarterGrid(); document.getElementById('ohelSetupHomeBtn').style.display='';
       } else if(homeGame==='101'){
         const saved = gameLoad101();
@@ -8884,6 +8886,7 @@
           g101UpdateTakimPanel();
           setTimeout(() => g101SayacInit(), 300); return;
         }
+        if(SYNC.aktif && SYNC.rol==='izleyici') return;
         showScreen('g101Setup'); g101InitSetup(); document.getElementById('g101SetupHomeBtn').style.display=''; document.getElementById('g101SetupExtras').style.display='';
       } else if(homeGame==='amerikano'){
         const saved = gameLoadAm();
@@ -8892,6 +8895,7 @@
           autoStartSeans();
           showScreen('amGame'); amRenderTable(); amRenderEntry(); return;
         }
+        if(SYNC.aktif && SYNC.rol==='izleyici') return;
         showScreen('amSetup'); amInitSetup(); document.getElementById('amSetupHomeBtn').style.display='';
       }
     }
