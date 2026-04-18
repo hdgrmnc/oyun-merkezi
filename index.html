@@ -1233,26 +1233,20 @@
     .sync-err{color:var(--accent-red);font-size:12px;margin-bottom:8px;min-height:16px}
 
     /* Senkron durum bandı — ekranın üstünde sabit */
-    #syncBand{display:none;position:fixed;top:0;left:0;right:0;z-index:9500;padding:7px 14px;align-items:center;gap:10px;font-size:12px;font-weight:700}
-    #syncBand.tabela{background:rgba(74,222,128,.15);border-bottom:1px solid rgba(74,222,128,.3);color:var(--accent-green)}
-    #syncBand.izleyici{background:rgba(126,179,245,.12);border-bottom:1px solid rgba(126,179,245,.3);color:var(--accent-blue)}
-    #syncBand .sync-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;animation:pulse 1.5s infinite}
-    #syncBand.tabela .sync-dot{background:var(--accent-green);box-shadow:0 0 6px var(--accent-green)}
-    #syncBand.izleyici .sync-dot{background:var(--accent-blue);box-shadow:0 0 6px var(--accent-blue)}
-    #syncBand .sync-band-code{background:rgba(255,255,255,.1);padding:2px 8px;border-radius:6px;letter-spacing:.12em}
-    #syncBand .sync-band-close{margin-left:auto;background:none;border:1px solid rgba(255,255,255,.2);border-radius:5px;color:inherit;font-size:11px;padding:2px 8px;cursor:pointer;flex-shrink:0}
 
-    /* İzleyici modunda tüm input/button'lar kilitlenir */
-    body.sync-izleyici input,
-    body.sync-izleyici button:not(.sync-allowed),
-    body.sync-izleyici select{pointer-events:none!important;opacity:.6}
-    body.sync-izleyici #syncBand *{pointer-events:auto!important;opacity:1!important}
+    /* İzleyici modunda sadece veri girişi yapan elementler kilitlenir */
+    body.sync-izleyici .sync-locked{pointer-events:none!important;opacity:.5!important}
     /* Senkron band görünürken app-root'u biraz aşağı it */
-    body.sync-active #app-root{padding-top:36px}
 
     /* Ana ekranda senkron butonu */
     #homeSyncBtn{width:100%;padding:11px;border-radius:10px;border:1px solid rgba(126,179,245,.3);background:rgba(126,179,245,.08);color:var(--accent-blue);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:.15s;margin-top:8px}
     #homeSyncBtn:hover{background:var(--bg-accent-blue)}
+    .sync-game-badge{display:none;align-items:center;gap:5px;background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.3);border-radius:20px;padding:3px 8px;margin-right:4px}
+    .sync-game-badge.izleyici{background:rgba(126,179,245,.12);border-color:rgba(126,179,245,.3)}
+    .sync-game-badge .sgb-dot{width:6px;height:6px;border-radius:50%;background:var(--accent-green);animation:pulse 1.5s infinite;flex-shrink:0}
+    .sync-game-badge.izleyici .sgb-dot{background:var(--accent-blue)}
+    .sync-game-badge .sgb-txt{font-size:11px;font-weight:700;color:var(--accent-green);letter-spacing:.05em}
+    .sync-game-badge.izleyici .sgb-txt{color:var(--accent-blue)}
   </style>
 </head>
 <body class="ls-wide">
@@ -2364,6 +2358,7 @@
       <div class="am-game-header">
         <span class="am-game-title" id="kingScreenTitle" style="color:var(--text)">King</span>
         <div style="display:flex;align-items:center;gap:6px">
+          <div class="sync-game-badge" id="syncBadgeKing"><span class="sgb-dot"></span><span class="sgb-txt">CANLI</span></div>
           <button id="histBtnKing" onclick="histSaveKing()" style="display:none;background:var(--bg-chip-green);border:1px solid rgba(74,222,128,0.25);border-radius:10px;color:var(--accent-green);font-size:13px;padding:3px 9px;cursor:pointer;line-height:1.4;transition:.15s">📋</button>
           <button onclick="kingAyarlarAc()" style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text2);font-size:13px;padding:3px 9px;cursor:pointer;line-height:1.4;transition:.15s" onmouseover="this.style.color='var(--text)';this.style.borderColor='var(--text4)'" onmouseout="this.style.color='var(--text2)';this.style.borderColor='var(--border)'">⚙️</button>
           <button id="kingSonuclarBtn" onclick="kingToggleResults()" style="background:var(--bg-accent-blue);border:1px solid var(--border-accent-blue);border-radius:10px;color:var(--accent-blue);font-size:13px;padding:3px 9px;cursor:pointer;line-height:1.4;transition:.15s">🏆 Sonuçlar</button>
@@ -2494,6 +2489,7 @@
       <div class="am-game-header">
         <span class="am-game-title" style="color:var(--accent-101)">Ohel</span>
         <div style="display:flex;align-items:center;gap:6px">
+          <div class="sync-game-badge" id="syncBadgeOhel"><span class="sgb-dot"></span><span class="sgb-txt">CANLI</span></div>
           <button id="histBtnOhel" onclick="histSaveOhel()" style="display:none;background:var(--bg-chip-green);border:1px solid rgba(74,222,128,0.25);border-radius:10px;color:var(--accent-green);font-size:13px;padding:3px 9px;cursor:pointer;line-height:1.4;transition:.15s">📋</button>
           <button onclick="ohelMenuAc()" style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text2);font-size:13px;padding:3px 9px;cursor:pointer;line-height:1.4;transition:.15s" onmouseover="this.style.color='var(--text)';this.style.borderColor='var(--text4)'" onmouseout="this.style.color='var(--text2)';this.style.borderColor='var(--border)'">⚙️</button>
           <button id="ohelSonuclarBtn" onclick="oToggleResults()" style="background:var(--bg-accent-blue);border:1px solid var(--border-accent-blue);border-radius:10px;color:var(--accent-blue);font-size:13px;padding:3px 9px;cursor:pointer;line-height:1.4;transition:.15s">🏆 Sonuçlar</button>
@@ -2744,6 +2740,7 @@
       <div class="g101-game-header">
         <span class="g101-game-title"><span class="g101-game-title-acc">101</span> Okey Skor</span>
         <div style="display:flex;align-items:center;gap:6px">
+          <div class="sync-game-badge" id="syncBadge101"><span class="sgb-dot"></span><span class="sgb-txt">CANLI</span></div>
           <span id="g101TakimBadge" style="display:none;font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;background:rgba(245,158,11,0.15);color:var(--accent-gold);border:1px solid rgba(245,158,11,0.3)">🤝 Takım</span>
           <button id="histBtn101" onclick="histSave101()" style="display:none;background:var(--bg-chip-green);border:1px solid rgba(74,222,128,0.25);border-radius:10px;color:var(--accent-green);font-size:13px;padding:3px 9px;cursor:pointer;line-height:1.4;transition:.15s">📋</button>
           <button onclick="g101MenuAc()" style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text2);font-size:13px;padding:3px 9px;cursor:pointer;line-height:1.4;transition:.15s" onmouseover="this.style.color='var(--text)';this.style.borderColor='var(--text4)'" onmouseout="this.style.color='var(--text2)';this.style.borderColor='var(--border)'">⚙️</button>
@@ -2955,6 +2952,7 @@
       <div class="am-game-header">
         <span class="am-game-title">Amerikano</span>
         <div style="display:flex;align-items:center;gap:6px">
+          <div class="sync-game-badge" id="syncBadgeAm"><span class="sgb-dot"></span><span class="sgb-txt">CANLI</span></div>
           <button id="histBtnAmerikano" onclick="histSaveAmerikano()" style="display:none;background:var(--bg-chip-green);border:1px solid rgba(74,222,128,0.25);border-radius:10px;color:var(--accent-green);font-size:13px;padding:3px 9px;cursor:pointer;line-height:1.4;transition:.15s">📋</button>
           <button onclick="amAyarlarAc()" style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text2);font-size:13px;padding:3px 9px;cursor:pointer;line-height:1.4;transition:.15s" onmouseover="this.style.color='var(--text)';this.style.borderColor='var(--text4)'" onmouseout="this.style.color='var(--text2)';this.style.borderColor='var(--border)'">⚙️</button>
           <button id="amSonuclarBtn" onclick="amToggleResultsOverlay()" style="background:var(--bg-accent-blue);border:1px solid var(--border-accent-blue);border-radius:10px;color:var(--accent-blue);font-size:13px;padding:3px 9px;cursor:pointer;line-height:1.4;transition:.15s">🏆 Sonuçlar</button>
@@ -10839,14 +10837,7 @@
   </div>
 </div>
 
-<!-- ══ SENKRON DURUM BANDI ══ -->
-<div id="syncBand">
-  <span class="sync-dot"></span>
-  <span id="syncBandLabel">Bağlı</span>
-  <span class="sync-band-code" id="syncBandCode"></span>
-  <span id="syncBandRole"></span>
-  <button class="sync-band-close sync-allowed" onclick="syncBaglantiKes()">✕ Çık</button>
-</div>
+
 
 <!-- ══ SENKRON MODAL ══ -->
 <div id="syncOverlay">
@@ -11075,7 +11066,6 @@
 
   /* ── UI güncelle ── */
   function syncUIGuncelle() {
-    const band  = document.getElementById('syncBand');
     const body  = document.body;
     const badge = document.getElementById('homeSyncBadge');
     const badgeTxt = document.getElementById('homeSyncBadgeText');
@@ -11083,12 +11073,7 @@
     const drawerSub = document.getElementById('drawerSyncSub');
 
     if (SYNC.aktif) {
-      // Üst bant
-      band.style.display = 'flex';
-      band.className = SYNC.rol === 'tabela' ? 'tabela' : 'izleyici';
-      document.getElementById('syncBandCode').textContent = SYNC.odaKodu;
-      document.getElementById('syncBandLabel').textContent = SYNC.rol === 'tabela' ? '📡 Tabelacı — Oda:' : '👁 İzleyici — Oda:';
-      document.getElementById('syncBandRole').textContent = '';
+
       body.classList.add('sync-active');
       if (SYNC.rol === 'izleyici') body.classList.add('sync-izleyici');
       else body.classList.remove('sync-izleyici');
@@ -11115,13 +11100,32 @@
       if (drawerTxt) drawerTxt.textContent = SYNC.rol === 'tabela' ? '📡 Tabelacı: ' + SYNC.odaKodu : '👁 İzleyici: ' + SYNC.odaKodu;
       if (drawerSub) drawerSub.textContent = 'Bağlantıyı kesmek için tıkla';
 
+      // Oyun ekranı badge'leri
+      syncGameBadgesGuncelle(true);
+
     } else {
-      band.style.display = 'none';
       body.classList.remove('sync-active', 'sync-izleyici');
       if (badge) badge.style.display = 'none';
       if (drawerTxt) drawerTxt.textContent = 'Canlı Senkron';
       if (drawerSub) drawerSub.textContent = 'Tabelacı veya izleyici olarak bağlan';
+      syncGameBadgesGuncelle(false);
     }
+  }
+
+  function syncGameBadgesGuncelle(aktif) {
+    const ids = ['syncBadgeKing','syncBadgeOhel','syncBadge101','syncBadgeAm'];
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (aktif) {
+        el.style.display = 'flex';
+        el.classList.toggle('izleyici', SYNC.rol === 'izleyici');
+        const txt = el.querySelector('.sgb-txt');
+        if (txt) txt.textContent = SYNC.odaKodu;
+      } else {
+        el.style.display = 'none';
+      }
+    });
   }
 
   /* ── Modal aç/kapat ── */
@@ -11141,6 +11145,50 @@
     document.getElementById('syncPanelIzleyici').style.display = tab === 'izleyici' ? '' : 'none';
     document.getElementById('syncErrMsg').textContent = '';
   };
+
+  /* ── İzleyici koruma: veri yazan fonksiyonları engelle ── */
+  const LOCKED_FNS = [
+    'kSaveRound','kEditSave','kYeniOyunEvet',
+    'oConfirmActuals','oSaveEdit',
+    'g101SubmitHand',
+    'amSaveEntry',
+    'ohelSaveNames','amSaveNames',
+    'gepAyarlarKaydet','gepAyarlarSifirla',
+    'kPuanAyarlarKaydet','g101AyarlarKaydet','ohelAyarlarKaydet',
+    'gameClearKing','gameClearOhel','gameClear101','gameClearAm',
+    'homeYeniOturum','puanDurumuYeniOturum'
+  ];
+
+  // Sayfa yüklendikten sonra fonksiyonları sar
+  document.addEventListener('DOMContentLoaded', function() {
+    LOCKED_FNS.forEach(fn => {
+      if (typeof window[fn] === 'function') {
+        const orig = window[fn];
+        window[fn] = function(...args) {
+          if (SYNC.aktif && SYNC.rol === 'izleyici') {
+            // Küçük uyarı göster
+            const t = document.createElement('div');
+            t.textContent = '👁 İzleyici modunda değişiklik yapamazsınız';
+            t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1e293b;border:1px solid rgba(126,179,245,.4);color:var(--accent-blue);padding:10px 18px;border-radius:20px;font-size:13px;font-weight:600;z-index:99999;white-space:nowrap;pointer-events:none;opacity:1;transition:opacity .4s';
+            document.body.appendChild(t);
+            setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 400); }, 2000);
+            return;
+          }
+          return orig.apply(this, args);
+        };
+      }
+    });
+
+    // Input'ları da kilitle
+    document.addEventListener('focus', function(e) {
+      if (SYNC.aktif && SYNC.rol === 'izleyici') {
+        const tag = e.target.tagName;
+        if ((tag === 'INPUT' || tag === 'TEXTAREA') && !e.target.classList.contains('sync-allowed')) {
+          e.target.blur();
+        }
+      }
+    }, true);
+  });
 
   /* ── localStorage.setItem hook — tabelacı her kayıtta otomatik sync ── */
   const _origSet = localStorage.setItem.bind(localStorage);
