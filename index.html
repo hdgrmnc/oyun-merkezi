@@ -1211,8 +1211,8 @@
   </style>
 
   <!-- ══ FIREBASE SDK ══ -->
-  <script src="firebase-app.js"></script>
-  <script src="firebase-db.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <!-- ══ SENKRON MOD STİLLERİ ══ -->
   <style>
@@ -10845,24 +10845,39 @@
     <div style="font-size:2rem;margin-bottom:.5rem">📡</div>
     <h2>Canlı Senkron</h2>
     <p>Tabelacı oyunu yönetir, izleyiciler anlık takip eder.</p>
-    <div class="sync-tab-row">
-      <button class="sync-tab active sync-allowed" id="syncTabTabela" onclick="syncTabSec('tabela')">🎮 Tabelacı</button>
-      <button class="sync-tab sync-allowed" id="syncTabIzleyici" onclick="syncTabSec('izleyici')">👁 İzleyici</button>
+
+    <!-- Bağlı durum paneli -->
+    <div id="syncPanelAktif" style="display:none">
+      <div id="syncAktifBilgi" style="background:var(--bg-accent-green);border:1px solid rgba(74,222,128,.25);border-radius:12px;padding:1rem;margin-bottom:1rem;text-align:left">
+        <div style="font-size:12px;color:var(--text2);margin-bottom:.3rem">Bağlantı durumu</div>
+        <div style="font-size:15px;font-weight:700;color:var(--accent-green)" id="syncAktifRolTxt"></div>
+        <div style="font-size:22px;font-weight:900;letter-spacing:2px;color:var(--text);margin-top:.25rem" id="syncAktifKodTxt"></div>
+      </div>
+      <button class="sync-btn-secondary sync-allowed" style="background:var(--bg-accent-red);border-color:rgba(248,113,113,.3);color:var(--accent-red);font-weight:700" onclick="syncBaglantiKesVeKapat()">🔌 Bağlantıyı Kes</button>
+      <button class="sync-btn-secondary sync-allowed" style="margin-top:.5rem" onclick="syncModalKapat()">Kapat</button>
     </div>
-    <div id="syncErrMsg" class="sync-err"></div>
-    <!-- Tabelacı paneli -->
-    <div id="syncPanelTabela">
-      <p style="font-size:12px;color:var(--text3);margin-bottom:.75rem">Bir oda kodu belirle — diğerleri bu kodla bağlanır</p>
-      <input class="sync-input sync-allowed" id="syncKodInput" maxlength="8" placeholder="Oda Kodu (ör: KRAL)" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')">
-      <button class="sync-btn-primary sync-allowed" onclick="syncOdaOlustur()">Odayı Aç ve Paylaş</button>
+
+    <!-- Bağlı değil paneli -->
+    <div id="syncPanelPasif">
+      <div class="sync-tab-row">
+        <button class="sync-tab active sync-allowed" id="syncTabTabela" onclick="syncTabSec('tabela')">🎮 Tabelacı</button>
+        <button class="sync-tab sync-allowed" id="syncTabIzleyici" onclick="syncTabSec('izleyici')">👁 İzleyici</button>
+      </div>
+      <div id="syncErrMsg" class="sync-err"></div>
+      <!-- Tabelacı paneli -->
+      <div id="syncPanelTabela">
+        <p style="font-size:12px;color:var(--text3);margin-bottom:.75rem">Bir oda kodu belirle — diğerleri bu kodla bağlanır</p>
+        <input class="sync-input sync-allowed" id="syncKodInput" maxlength="8" placeholder="Oda Kodu (ör: KRAL)" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')">
+        <button class="sync-btn-primary sync-allowed" onclick="syncOdaOlustur()">Odayı Aç ve Paylaş</button>
+      </div>
+      <!-- İzleyici paneli -->
+      <div id="syncPanelIzleyici" style="display:none">
+        <p style="font-size:12px;color:var(--text3);margin-bottom:.75rem">Tabelacının belirlediği kodu gir</p>
+        <input class="sync-input sync-allowed" id="syncKodInputIzle" maxlength="8" placeholder="Oda Kodunu Gir" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')">
+        <button class="sync-btn-primary sync-allowed" onclick="syncOdayaKatil()">Bağlan</button>
+      </div>
+      <button class="sync-btn-secondary sync-allowed" onclick="syncModalKapat()">Vazgeç</button>
     </div>
-    <!-- İzleyici paneli -->
-    <div id="syncPanelIzleyici" style="display:none">
-      <p style="font-size:12px;color:var(--text3);margin-bottom:.75rem">Tabelacının belirlediği kodu gir</p>
-      <input class="sync-input sync-allowed" id="syncKodInputIzle" maxlength="8" placeholder="Oda Kodunu Gir" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')">
-      <button class="sync-btn-primary sync-allowed" onclick="syncOdayaKatil()">Bağlan</button>
-    </div>
-    <button class="sync-btn-secondary sync-allowed" onclick="syncModalKapat()">Vazgeç</button>
   </div>
 </div>
 
@@ -10923,25 +10938,38 @@
     if (!SYNC.aktif || SYNC.rol !== 'tabela') return;
     const paket = oyunVerisiniAl();
     if (!paket) return;
-    SYNC.yaziyor = true;
     db.ref('odalar/' + SYNC.odaKodu).set(paket)
-      .catch(e => console.warn('Sync write:', e))
-      .finally(() => { setTimeout(() => { SYNC.yaziyor = false; }, 200); });
+      .catch(e => console.warn('Sync write:', e));
   };
 
   /* ── Firebase'den dinle (izleyici) ── */
   function syncDinle() {
     if (SYNC.listener) {
       db.ref('odalar/' + SYNC.odaKodu).off('value', SYNC.listener);
+      SYNC.listener = null;
+    }
+    // Bağlantı durumunu izle
+    if (!SYNC._connListener) {
+      SYNC._connListener = db.ref('.info/connected').on('value', snap => {
+        const bagli = snap.val();
+        const badge = document.getElementById('homeSyncBadge');
+        if (badge && SYNC.aktif) {
+          const dot = badge.querySelector('span');
+          if (dot) {
+            dot.style.background = bagli ? (SYNC.rol === 'tabela' ? 'var(--accent-green)' : 'var(--accent-blue)') : 'var(--accent-red)';
+            dot.style.boxShadow  = bagli ? '' : '0 0 5px var(--accent-red)';
+          }
+        }
+      });
     }
     SYNC.listener = db.ref('odalar/' + SYNC.odaKodu).on('value', snap => {
       if (!SYNC.aktif || SYNC.rol !== 'izleyici') return;
       const paket = snap.val();
       if (!paket || !paket.oyun || !paket.veri) return;
 
-      // localStorage'a yaz
+      // localStorage'a yaz (hook tetiklenmesin diye _origSet kullan)
       const key = { king:'oyun_king', ohel:'oyun_ohel', g101:'oyun_101', am:'oyun_am' }[paket.oyun];
-      try { localStorage.setItem(key, JSON.stringify(paket.veri)); } catch(e) {}
+      try { _origSet(key, JSON.stringify(paket.veri)); } catch(e) {}
 
       // Ekranı güncelle
       izleyiciEkraniGuncelle(paket.oyun, paket.veri);
@@ -10956,13 +10984,13 @@
           kPlayers = veri.players || kPlayers;
           kRounds  = veri.rounds  || kRounds;
           kMode    = veri.mode    || kMode;
-          if (typeof kRender === 'function') kRender();
         }
-        // Eğer king ekranı açık değilse, aç
+        // Ekran açık değilse aç
         const kg = document.getElementById('kingGame');
         if (kg && !kg.classList.contains('active') && veri.rounds && veri.rounds.length > 0) {
           if (typeof showScreen === 'function') showScreen('kingGame');
         }
+        if (typeof kRender === 'function') kRender();
       } else if (oyun === 'ohel') {
         if (typeof oPlayers !== 'undefined') {
           oPlayers      = veri.players      || oPlayers;
@@ -10970,34 +10998,34 @@
           oPhase        = veri.phase        || oPhase;
           oCurrentBids  = veri.currentBids  || oCurrentBids;
           oFirstPlayer  = veri.firstPlayer  !== undefined ? veri.firstPlayer : oFirstPlayer;
-          if (typeof oRenderAll === 'function') oRenderAll();
         }
         const og = document.getElementById('ohelGame');
         if (og && !og.classList.contains('active') && veri.history && veri.history.length > 0) {
           if (typeof showScreen === 'function') showScreen('ohelGame');
         }
+        if (typeof oRenderAll === 'function') oRenderAll();
       } else if (oyun === 'g101') {
         if (typeof G101 !== 'undefined') {
           Object.assign(G101, veri);
-          if (typeof g101Render === 'function') g101Render();
-          else if (typeof g101RenderAll === 'function') g101RenderAll();
         }
         const gg = document.getElementById('g101Game');
         if (gg && !gg.classList.contains('active') && veri.hands && veri.hands.length > 0) {
           if (typeof showScreen === 'function') showScreen('g101Game');
         }
+        if (typeof g101Render === 'function') g101Render();
+        else if (typeof g101RenderAll === 'function') g101RenderAll();
       } else if (oyun === 'am') {
         if (typeof AM !== 'undefined') {
           const { _amFirstPlayer, ...rest } = veri;
           Object.assign(AM, rest);
           if (_amFirstPlayer !== undefined && typeof amFirstPlayer !== 'undefined') amFirstPlayer = _amFirstPlayer;
-          if (typeof amRenderAll === 'function') amRenderAll();
-          else if (typeof amRender === 'function') amRender();
         }
         const ag = document.getElementById('amGame');
         if (ag && !ag.classList.contains('active') && veri.players && veri.players.length > 0) {
           if (typeof showScreen === 'function') showScreen('amGame');
         }
+        if (typeof amRenderAll === 'function') amRenderAll();
+        else if (typeof amRender === 'function') amRender();
       }
     } catch(ex) { console.warn('izleyiciEkraniGuncelle:', ex); }
   }
@@ -11053,6 +11081,10 @@
     if (SYNC.listener) {
       db.ref('odalar/' + SYNC.odaKodu).off('value', SYNC.listener);
       SYNC.listener = null;
+    }
+    if (SYNC._connListener) {
+      db.ref('.info/connected').off('value', SYNC._connListener);
+      SYNC._connListener = null;
     }
     // Tabelacıysa odayı temizle
     if (SYNC.rol === 'tabela' && SYNC.odaKodu) {
@@ -11131,10 +11163,27 @@
   /* ── Modal aç/kapat ── */
   window.syncModalAc = function() {
     document.getElementById('syncErrMsg').textContent = '';
+    if (SYNC.aktif) {
+      // Bağlıyken aktif paneli göster
+      document.getElementById('syncPanelAktif').style.display = '';
+      document.getElementById('syncPanelPasif').style.display = 'none';
+      const rolTxt = document.getElementById('syncAktifRolTxt');
+      const kodTxt = document.getElementById('syncAktifKodTxt');
+      if (rolTxt) rolTxt.textContent = SYNC.rol === 'tabela' ? '🎮 Tabelacı olarak bağlısın' : '👁 İzleyici olarak bağlısın';
+      if (kodTxt) kodTxt.textContent = SYNC.odaKodu;
+    } else {
+      document.getElementById('syncPanelAktif').style.display = 'none';
+      document.getElementById('syncPanelPasif').style.display = '';
+    }
     document.getElementById('syncOverlay').classList.add('open');
   };
   window.syncModalKapat = function() {
     document.getElementById('syncOverlay').classList.remove('open');
+  };
+  window.syncBaglantiKesVeKapat = function() {
+    if (!confirm('Canlı bağlantıyı kesmek istediğine emin misin?')) return;
+    syncBaglantiKes();
+    syncModalKapat();
   };
 
   /* ── Tab seçimi ── */
@@ -11194,12 +11243,12 @@
   const _origSet = localStorage.setItem.bind(localStorage);
   localStorage.setItem = function(key, value) {
     _origSet(key, value);
-    if (SYNC.aktif && SYNC.rol === 'tabela' && !SYNC.yaziyor) {
+    if (SYNC.aktif && SYNC.rol === 'tabela') {
       const oyunKeyler = ['oyun_king','oyun_ohel','oyun_101','oyun_am'];
       if (oyunKeyler.includes(key)) {
-        // Kısa gecikme — aynı frame'de birden fazla yazımı birleştir
+        // Debounce — aynı frame'de birden fazla yazımı birleştir
         clearTimeout(SYNC._debounce);
-        SYNC._debounce = setTimeout(() => { window.syncYaz(); }, 150);
+        SYNC._debounce = setTimeout(() => { window.syncYaz(); }, 80);
       }
     }
   };
