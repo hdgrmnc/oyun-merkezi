@@ -1767,6 +1767,12 @@
       <div><div class="drawer-item-text">Puan Durumu</div><div class="drawer-item-sub" id="drawerHistCount">0 kayıt</div></div>
     </button>
 
+    <div class="drawer-section">Canlı Senkron</div>
+    <button class="drawer-item sync-allowed" onclick="drawerClose();syncModalAc()">
+      <span class="drawer-item-icon">📡</span>
+      <div><div class="drawer-item-text" id="drawerSyncText">Canlı Senkron</div><div class="drawer-item-sub" id="drawerSyncSub">Tabelacı veya izleyici olarak bağlan</div></div>
+    </button>
+
     <div class="drawer-section">Uygulama</div>
     <button class="drawer-item" onclick="drawerClose();temaAc()">
       <span class="drawer-item-icon">🎨</span>
@@ -1833,9 +1839,13 @@
       <button class="hamburger-btn" onclick="drawerOpen()" aria-label="Menü" style="position:static;flex-shrink:0;width:40px;height:40px">
         <span></span><span></span><span></span>
       </button>
-      <div>
+      <div style="flex:1">
         <h1 class="home-title" style="margin-bottom:2px">Oyun Merkezi</h1>
         <p class="home-sub" style="margin-bottom:0">Oynamak istediğiniz oyunu seçin</p>
+      </div>
+      <div id="homeSyncBadge" style="display:none;align-items:center;gap:6px;background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.3);border-radius:20px;padding:5px 10px;cursor:pointer" onclick="syncModalAc()" class="sync-allowed">
+        <span style="width:7px;height:7px;border-radius:50%;background:var(--accent-green);box-shadow:0 0 5px var(--accent-green);animation:pulse 1.5s infinite;flex-shrink:0;display:inline-block"></span>
+        <span id="homeSyncBadgeText" style="font-size:11px;font-weight:700;color:var(--accent-green)">CANLI</span>
       </div>
     </div>
     <div class="home-grid">
@@ -1880,9 +1890,7 @@
       <button id="homeNewOturumBtn" onclick="homeYeniOturum()" style="width:100%;padding:11px;border-radius:10px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:.15s" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='var(--bg2)'">
         ＋ Yeni Oturum Başlat
       </button>
-      <button id="homeSyncBtn" onclick="syncModalAc()" class="sync-allowed">
-        📡 Canlı Senkron
-      </button>
+
     </div>
   </div>
   <!-- ══════════════════════════════════════════════
@@ -11067,11 +11075,15 @@
 
   /* ── UI güncelle ── */
   function syncUIGuncelle() {
-    const band = document.getElementById('syncBand');
-    const body = document.body;
-    const btn  = document.getElementById('homeSyncBtn');
+    const band  = document.getElementById('syncBand');
+    const body  = document.body;
+    const badge = document.getElementById('homeSyncBadge');
+    const badgeTxt = document.getElementById('homeSyncBadgeText');
+    const drawerTxt = document.getElementById('drawerSyncText');
+    const drawerSub = document.getElementById('drawerSyncSub');
 
     if (SYNC.aktif) {
+      // Üst bant
       band.style.display = 'flex';
       band.className = SYNC.rol === 'tabela' ? 'tabela' : 'izleyici';
       document.getElementById('syncBandCode').textContent = SYNC.odaKodu;
@@ -11080,11 +11092,35 @@
       body.classList.add('sync-active');
       if (SYNC.rol === 'izleyici') body.classList.add('sync-izleyici');
       else body.classList.remove('sync-izleyici');
-      if (btn) btn.textContent = '📡 Senkron Aktif (' + SYNC.odaKodu + ')';
+
+      // Ana ekran badge
+      if (badge) {
+        badge.style.display = 'flex';
+        if (SYNC.rol === 'tabela') {
+          badge.style.background = 'rgba(74,222,128,.12)';
+          badge.style.borderColor = 'rgba(74,222,128,.3)';
+          badge.querySelector('span').style.background = 'var(--accent-green)';
+          badge.querySelector('span').style.boxShadow = '0 0 5px var(--accent-green)';
+          if (badgeTxt) { badgeTxt.textContent = SYNC.odaKodu; badgeTxt.style.color = 'var(--accent-green)'; }
+        } else {
+          badge.style.background = 'rgba(126,179,245,.12)';
+          badge.style.borderColor = 'rgba(126,179,245,.3)';
+          badge.querySelector('span').style.background = 'var(--accent-blue)';
+          badge.querySelector('span').style.boxShadow = '0 0 5px var(--accent-blue)';
+          if (badgeTxt) { badgeTxt.textContent = SYNC.odaKodu; badgeTxt.style.color = 'var(--accent-blue)'; }
+        }
+      }
+
+      // Drawer metni
+      if (drawerTxt) drawerTxt.textContent = SYNC.rol === 'tabela' ? '📡 Tabelacı: ' + SYNC.odaKodu : '👁 İzleyici: ' + SYNC.odaKodu;
+      if (drawerSub) drawerSub.textContent = 'Bağlantıyı kesmek için tıkla';
+
     } else {
       band.style.display = 'none';
       body.classList.remove('sync-active', 'sync-izleyici');
-      if (btn) btn.textContent = '📡 Canlı Senkron';
+      if (badge) badge.style.display = 'none';
+      if (drawerTxt) drawerTxt.textContent = 'Canlı Senkron';
+      if (drawerSub) drawerSub.textContent = 'Tabelacı veya izleyici olarak bağlan';
     }
   }
 
